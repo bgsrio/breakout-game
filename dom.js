@@ -1,7 +1,12 @@
 const grid = document.querySelector(".grid");
+const scoreDisplay = document.querySelector("#score");
 const blockWidth = 100;
 const blockHeight = 20;
+const ballDiameter = 20;
 const boardWidth = 560;
+const boardHeight = 300;
+let xDirection = -2;
+let yDirection = 2;
 
 const userStart = [230, 10];
 let currentPosition = userStart;
@@ -9,7 +14,10 @@ let currentPosition = userStart;
 const ballStart = [270, 40];
 let ballCurrentPosition = ballStart;
 
-//create block
+let timerId;
+let score = 0;
+
+//criando a classe bloco
 class Block {
   constructor(xAxis, yAxis) {
     this.bottomLeft = [xAxis, yAxis];
@@ -54,8 +62,8 @@ addBlocks();
 //adicionando user, que é o paddle que se desloca para rebater a bola
 const user = document.createElement("div");
 user.classList.add("user");
-drawUser();
 grid.appendChild(user);
+drawUser();
 
 //definindo a posição do usuário no grid a partir da userStart
 function drawUser() {
@@ -98,11 +106,86 @@ grid.appendChild(ball);
 
 // movendo a bola, que vai se mexer 2px em cada eixo x e y, diagonalmente. A bola passa direto do grid.
 function moveBall() {
-  ballCurrentPosition[0] += 2;
-  ballCurrentPosition[1] += 2;
+  ballCurrentPosition[0] += xDirection;
+  ballCurrentPosition[1] += yDirection;
   drawBall();
+  checkForCollisions();
 }
 timerId = setInterval(moveBall, 15);
 
 //identificando os obstáculos para redirecionar o sentido da bola no grid
-// teste para o git
+function checkForCollisions() {
+  // checa as colisões nas laterais e base dos blocos, iterando por todos eles - NÃO ESTÁ FUNCIONANDO!!!!
+  for (let i = 0; i < blocks.length; i++) {
+    if (
+      ballCurrentPosition[0] > blocks[i].bottomLeft[0] &&
+      ballCurrentPosition[0] < blocks[i].bottomRight[0] &&
+      ballCurrentPosition[1] + ballDiameter > blocks[i].bottomLeft[1] &&
+      ballCurrentPosition[1] < blocks[i].topLeft[1]
+    ) {
+      //se a condição ocorre, o método vai remover a classe bloco
+
+      const allBlocks = Array.from(document.querySelectorAll(".block"));
+      allBlocks[i].classList.remove("block");
+      blocks.splice(i, 1);
+      changeDirection();
+      score++;
+      scoreDisplay.innerHTML = score;
+    }
+    if (blocks.length == 0) {
+      scoreDisplay.innerHTML = "You Win!";
+      clearInterval(timerId);
+      document.removeEventListener("keydown", moveUser);
+    }
+  }
+
+  // checa as colisões nas paredes, mantendo o comportamento
+  if (
+    ballCurrentPosition[0] >= boardWidth - ballDiameter ||
+    ballCurrentPosition[1] >= boardHeight - ballDiameter ||
+    ballCurrentPosition[0] <= 0
+  ) {
+    changeDirection();
+  }
+
+  //checa colisões no user paddle e mantém o comportamento de mudar de direção
+  if (
+    ballCurrentPosition[0] > currentPosition[0] &&
+    ballCurrentPosition[0] < currentPosition[0] + blockWidth &&
+    ballCurrentPosition[1] > currentPosition[1] &&
+    ballCurrentPosition[1] < currentPosition[1] + blockHeight
+  ) {
+    changeDirection();
+  }
+
+  //game over - condição que determina o fim do jogo, ao tocar na base do grid
+  if (ballCurrentPosition[1] <= 0) {
+    clearInterval(timerId);
+    scoreDisplay.innerHTML = "You lose!";
+    document.removeEventListener("keydown", moveUser);
+  }
+}
+
+// esta função vai determinar a mudança de direção da bola sempre que atingir um obstáculo
+function changeDirection() {
+  // se sobe positivamente nos eixos x e y - direção NE
+  if (xDirection === 2 && yDirection === 2) {
+    yDirection = -2;
+    return;
+  }
+  // direção SE
+  if (xDirection === 2 && yDirection === -2) {
+    xDirection = -2;
+    return;
+  }
+  // direção SO
+  if (xDirection === -2 && yDirection === -2) {
+    yDirection = 2;
+    return;
+  }
+  // direção NO
+  if (xDirection === -2 && yDirection === 2) {
+    xDirection = 2;
+    return;
+  }
+}
