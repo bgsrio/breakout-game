@@ -1,4 +1,5 @@
 const btnStart = document.getElementById("btnStart");
+const btnRestart = document.getElementById("btnRestart");
 const grid = document.querySelector(".grid");
 const scoreDisplay = document.querySelector("#score");
 
@@ -18,11 +19,6 @@ let ballCurrentPosition = ballStart;
 
 let timerId;
 let score = 0;
-
-// como fazer o jogo começar apenas com o click no botão jogar??
-// btnStart.addEventListener("click", () => {
-//   drawBall()
-// });
 
 //criando a classe bloco
 class Block {
@@ -118,10 +114,17 @@ function moveBall() {
   drawBall();
   checkForCollisions();
 }
-timerId = setInterval(moveBall, 10);
+//faz o jogo começar apenas com o click no botão jogar- carregava ao iniciar a página
+btnStart.addEventListener("click", () => {
+  timerId = setInterval(moveBall, 10);
+});
+
+//faz o jogo começar apenas com o click no botão jogar- carregava ao iniciar a página
+btnRestart.addEventListener("click", () => {
+  location.reload();
+});
 
 //identificando os obstáculos para redirecionar o sentido da bola no grid
-
 function checkForCollisions() {
   // checa as colisões nas laterais e base dos blocos, iterando por todos eles
   for (let i = 0; i < blocks.length; i++) {
