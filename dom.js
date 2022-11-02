@@ -1,27 +1,34 @@
+const btnStart = document.getElementById("btnStart");
 const grid = document.querySelector(".grid");
 const scoreDisplay = document.querySelector("#score");
+
 const blockWidth = 100;
 const blockHeight = 20;
-const ballDiameter = 20;
+const ballDiameter = 16;
 const boardWidth = 560;
 const boardHeight = 300;
-let xDirection = -2;
-let yDirection = 2;
+let xDirection = 1;
+let yDirection = 1;
 
 const userStart = [230, 10];
 let currentPosition = userStart;
 
-const ballStart = [270, 40];
+const ballStart = [270, 60];
 let ballCurrentPosition = ballStart;
 
 let timerId;
 let score = 0;
 
+// como fazer o jogo começar apenas com o click no botão jogar??
+// btnStart.addEventListener("click", () => {
+//   drawBall()
+// });
+
 //criando a classe bloco
 class Block {
   constructor(xAxis, yAxis) {
     this.bottomLeft = [xAxis, yAxis];
-    this.bottomRight = [xAxis + blockWidth.yAxis]; // ponto de onde sai o eixo X mais a largura do bloco
+    this.bottomRight = [xAxis + blockWidth, yAxis]; // ponto de onde sai o eixo X mais a largura do bloco
     this.topLeft = [xAxis, yAxis + blockHeight];
     this.topRight = [xAxis + blockWidth, yAxis + blockHeight];
   }
@@ -71,13 +78,7 @@ function drawUser() {
   user.style.bottom = currentPosition[1] + "px";
 }
 
-//definindo a posição da bola no grid, como feito com o paddle do usuário
-function drawBall() {
-  ball.style.left = ballCurrentPosition[0] + "px";
-  ball.style.bottom = ballCurrentPosition[1] + "px";
-}
-
-// movimentando o user no eixo x;
+// movimentando o user paddle no eixo x;
 function moveUser(e) {
   switch (e.key) {
     case "ArrowLeft":
@@ -98,6 +99,12 @@ function moveUser(e) {
 }
 document.addEventListener("keydown", moveUser);
 
+//definindo a posição da bola no grid, como feito com o paddle do usuário
+function drawBall() {
+  ball.style.left = ballCurrentPosition[0] + "px";
+  ball.style.bottom = ballCurrentPosition[1] + "px";
+}
+
 //adicionando a bola e suas especificações
 const ball = document.createElement("div");
 ball.classList.add("ball");
@@ -111,12 +118,14 @@ function moveBall() {
   drawBall();
   checkForCollisions();
 }
-timerId = setInterval(moveBall, 15);
+timerId = setInterval(moveBall, 10);
 
 //identificando os obstáculos para redirecionar o sentido da bola no grid
+
 function checkForCollisions() {
-  // checa as colisões nas laterais e base dos blocos, iterando por todos eles - NÃO ESTÁ FUNCIONANDO!!!!
+  // checa as colisões nas laterais e base dos blocos, iterando por todos eles
   for (let i = 0; i < blocks.length; i++) {
+    console.log(ballCurrentPosition[0], ballCurrentPosition[1]);
     if (
       ballCurrentPosition[0] > blocks[i].bottomLeft[0] &&
       ballCurrentPosition[0] < blocks[i].bottomRight[0] &&
@@ -124,16 +133,15 @@ function checkForCollisions() {
       ballCurrentPosition[1] < blocks[i].topLeft[1]
     ) {
       //se a condição ocorre, o método vai remover a classe bloco
-
       const allBlocks = Array.from(document.querySelectorAll(".block"));
       allBlocks[i].classList.remove("block");
       blocks.splice(i, 1);
       changeDirection();
       score++;
-      scoreDisplay.innerHTML = score;
+      scoreDisplay.innerHTML = `Você quebrou ${score} blocos`;
     }
     if (blocks.length == 0) {
-      scoreDisplay.innerHTML = "You Win!";
+      scoreDisplay.innerHTML = "Parabéns! Você ganhou!";
       clearInterval(timerId);
       document.removeEventListener("keydown", moveUser);
     }
@@ -161,7 +169,7 @@ function checkForCollisions() {
   //game over - condição que determina o fim do jogo, ao tocar na base do grid
   if (ballCurrentPosition[1] <= 0) {
     clearInterval(timerId);
-    scoreDisplay.innerHTML = "You lose!";
+    scoreDisplay.innerHTML = "Você perdeu!";
     document.removeEventListener("keydown", moveUser);
   }
 }
@@ -169,23 +177,23 @@ function checkForCollisions() {
 // esta função vai determinar a mudança de direção da bola sempre que atingir um obstáculo
 function changeDirection() {
   // se sobe positivamente nos eixos x e y - direção NE
-  if (xDirection === 2 && yDirection === 2) {
-    yDirection = -2;
+  if (xDirection === 1 && yDirection === 1) {
+    yDirection = -1;
     return;
   }
   // direção SE
-  if (xDirection === 2 && yDirection === -2) {
-    xDirection = -2;
+  if (xDirection === 1 && yDirection === -1) {
+    xDirection = -1;
     return;
   }
   // direção SO
-  if (xDirection === -2 && yDirection === -2) {
-    yDirection = 2;
+  if (xDirection === -1 && yDirection === -1) {
+    yDirection = 1;
     return;
   }
   // direção NO
-  if (xDirection === -2 && yDirection === 2) {
-    xDirection = 2;
+  if (xDirection === -1 && yDirection === 1) {
+    xDirection = 1;
     return;
   }
 }
